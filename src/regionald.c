@@ -24,6 +24,7 @@ typedef struct {
 
 static RegionItem region_list_items[MAX_REGIONS];
 static int region_count = -1;
+static bool fetching_regions = true;
 
 bool send_region_update(const char* const new_region) {
     DictionaryIterator *iter;
@@ -94,9 +95,11 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
     Tuple *region_list_begin = dict_find(received, REGION_LIST_BEGIN);
 
     if (region_list_tuple) {
+        fetching_regions = true;
         region_list_update(region_list_tuple->value->cstring, region_list_begin == NULL);
     }
     if (region_selected_tuple) {
+        fetching_regions = false;
         region_selected_update(region_selected_tuple->value->cstring);
         menu_layer_reload_data(menu_layer);
     }
@@ -117,6 +120,11 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 }
 
 static void draw_row_callback(GContext* ctx, Layer *cell_layer, MenuIndex *cell_index, void *data) {
+    if (fetching_regions) {
+        menu_cell_basic_draw(ctx, cell_layer, "Fetching regions...", NULL, NULL);
+        return;
+    }
+
     const int index = cell_index->row;
     RegionItem item = region_list_items[index];    
     /*
@@ -132,10 +140,14 @@ static void draw_row_callback(GContext* ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static uint16_t get_num_rows_callback(struct MenuLayer *menu_layer, uint16_t section_index, void *data) {
-    return region_count + 1;
+    return fetching_regions ? 1 : region_count + 1;
 }
 
 static void select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
+    if (fetching_regions) {
+        return;
+    }
+
     const int index = cell_index->row;
     DictionaryIterator *iter;
 
