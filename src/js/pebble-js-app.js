@@ -26,7 +26,7 @@ function extractRegionInfo(responseText, extractList) {
         currentMatch.shift();
         allMatches += currentMatch[0] + "," + currentMatch[1];
         matchesCount++;
-        if (matchesCount == 4) {
+        if (matchesCount == 6) {
             matchesList.push(allMatches);
             matchesCount = 0;
             allMatches = "";
@@ -52,10 +52,10 @@ function requestRegionPage() {
             console.log("Region selected: " + regionSelected);
             var ackHandler = function(e) {
                 console.log("Message success!");
-                if (regionList.length !== 0) {
+                if (regionList.length !== 1) {
                     Pebble.sendAppMessage({region_list: regionList.shift()}, ackHandler, nackHandler);
                 } else {
-                    Pebble.sendAppMessage({region_selected: regionSelected}, function() {}, nackHandler);
+                    Pebble.sendAppMessage({region_list: regionList.shift(), region_selected: regionSelected}, function() {}, nackHandler);
                 }
             };
             var nackHandler = function(e) {

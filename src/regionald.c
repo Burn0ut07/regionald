@@ -115,6 +115,14 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Message not sent! Reason: %d", reason);
 }
 
+static int16_t get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
+    return MENU_CELL_BASIC_HEADER_HEIGHT;
+}
+
+static void draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
+    menu_cell_basic_header_draw(ctx, cell_layer, "Regions");
+}
+
 static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
     return 44;
 }
@@ -165,6 +173,8 @@ static void window_load(Window* window) {
     GRect window_frame = layer_get_frame(window_layer);
     menu_layer = menu_layer_create(window_frame);
     menu_layer_set_callbacks(menu_layer, NULL, (MenuLayerCallbacks) {
+        .get_header_height = (MenuLayerGetHeaderHeightCallback) get_header_height_callback,
+        .draw_header = (MenuLayerDrawHeaderCallback) draw_header_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback) get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback) draw_row_callback,
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback) get_num_rows_callback,
