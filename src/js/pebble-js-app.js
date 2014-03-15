@@ -40,7 +40,7 @@ function extractRegionInfo(responseText, extractList) {
     return matchesList;
 }
 
-function requestRegionPage() {
+function requestRegions() {
     var req = new XMLHttpRequest();
     req.open('GET', 'https://unlocator.com/account/region-settings', true);
     req.onload = function() {
@@ -72,6 +72,11 @@ function requestRegionPage() {
     req.send();
 }
 
+function isUserLoggedIn() {
+    // TODO: Quickly check if user is already logged in
+    return false;
+}
+
 function updateRegion(newRegion) {
     var req = new XMLHttpRequest();
     req.open('POST', 'https://unlocator.com/account/region-settings', true);
@@ -91,26 +96,103 @@ function updateRegion(newRegion) {
     req.send(params);
 }
 
+function loginUser(username, password, afterLogin) {
+    var req = new XMLHttpRequest();
+    req.open('POST', 'https://unlocator.com/account/login', true);
+    req.onload = function() {
+        console.log("Onload called. status: " + this.status + ", readyState: " + this.readyState);
+        if (this.readyState == 4 && this.status == 200) {
+            if (afterLogin !== null) {
+                afterLogin();
+            }
+        }
+    };
+    req.onerror = transferFailed;
+    req.onabort = transferCanceled;
+    var params = "amember_login=" + username + "&amember_pass=" + password;
+    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    req.setRequestHeader("Content-length", params.length);
+    req.setRequestHeader("Connection", "close");
+    req.send(params);
+}
+
+function getUserData() {
+    // Not logged in, so lets check localStorage for credentials
+    var userAuth = localStorage.getItem('user-auth');
+    if (userAuth === null) {
+        // If no credentials found alert watch
+        sendServiceError('Setup login in settings');
+        return null;
+    }
+
+    var user = JSON.parse(userAuth);
+    if (user.username === '' || user.password === '') {
+        sendServiceError('Invalid credentials');
+        return null;
+    }
+
+    return user;
+}
+
+function configUrlWithStored(baseUrl) {
+    var userAuth = localStorage.getItem('user-auth');
+    if (userAuth === null) {
+        return baseUrl;
+    }
+
+    var user = JSON.parse(userAuth);
+    var queryParams = '';
+    Object.keys(user).forEach(function (key) {
+        queryParams += key + '=' + encodeURIComponent(user[key]) + '&';
+    });
+
+    return baseUrl + '?' + queryParams.slice(0, -1);
+}
+
+function sendServiceError(error) {
+    Pebble.sendAppMessage({service_error: error});
+}
+
 // Called when JS is ready
 Pebble.addEventListener("ready",
     function(e) {
-        var req = new XMLHttpRequest();
-        req.open('POST', 'https://unlocator.com/account/login', true);
-        req.onload = function() {
-            console.log("Onload called. status: " + this.status + ", readyState: " + this.readyState);
-            if (this.readyState == 4 && this.status == 200) {
-                requestRegionPage();
-            }
-        };
-        req.onerror = transferFailed;
-        req.onabort = transferCanceled;
-        var params = "amember_login=<login>&amember_pass=<pass>";
-        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        req.setRequestHeader("Content-length", params.length);
-        req.setRequestHeader("Connection", "close");
-        req.send(params);
+        console.log('ready function called');
+
+        // If already logged in request regions and send to watch
+        if (isUserLoggedIn()) {
+            requestRegions();
+            return;
+        }
+
+        var user = getUserData();
+        if (user !== null) {
+            loginUser(user.username, user.password, requestRegions);
+        }
     }
 );
+
+Pebble.addEventListener("showConfiguration", function() {
+  console.log("showing configuration");
+  var configUrl = configUrlWithStored('http://burn0ut07.github.com/regionald/');
+  console.log("configUrl: " + configUrl);
+  Pebble.openURL(configUrl);
+});
+
+Pebble.addEventListener("webviewclosed", function(e) {
+  console.log("configuration closed");
+  // webview closed
+  console.log('response: ' + e.response);
+  if (e.response === null || e.response === '') {
+    console.log("No data in form");
+    return;
+  }
+  var user = JSON.parse(decodeURIComponent(e.response));
+  localStorage.setItem('user-auth', JSON.stringify(user));
+
+  if (getUserData()) {
+    loginUser(user.username, user.password, requestRegions);
+  }
+});
 
 // Called when incoming message from the Pebble is received
 Pebble.addEventListener("appmessage",

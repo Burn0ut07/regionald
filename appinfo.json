@@ -5,12 +5,13 @@
         "region_list_begin": 3,
         "region_list": 0,
         "region_update": 1,
-        "region_selected": 2
+        "region_selected": 2,
+        "service_error": 4
     },
     "longName": "Regionald",
     "versionCode": 1,
     "capabilities": [
-        ""
+        "configurable"
     ],
     "shortName": "Regionald",
     "companyName": "joel.jauregui@gmail.com",

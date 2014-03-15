@@ -11,7 +11,8 @@ enum {
     REGION_LIST,
     REGION_UPDATE,
     REGION_SELECTED,
-    REGION_LIST_BEGIN
+    REGION_LIST_BEGIN,
+    SERVICE_ERROR
 };
 
 #define MAX_REGIONS (11)
@@ -25,6 +26,7 @@ typedef struct {
 static RegionItem region_list_items[MAX_REGIONS];
 static int region_count = -1;
 static bool fetching_regions = true;
+static char info_cell_message[100] = "Fetching regions...";
 
 bool send_region_update(const char* const new_region) {
     DictionaryIterator *iter;
@@ -93,7 +95,12 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
     Tuple *region_list_tuple = dict_find(received, REGION_LIST);
     Tuple *region_selected_tuple = dict_find(received, REGION_SELECTED);
     Tuple *region_list_begin = dict_find(received, REGION_LIST_BEGIN);
+    Tuple *service_error_tuple = dict_find(received, SERVICE_ERROR);
 
+    if (service_error_tuple) {
+        strncpy(info_cell_message, service_error_tuple->value->cstring, 100);
+        menu_layer_reload_data(menu_layer);
+    }
     if (region_list_tuple) {
         fetching_regions = true;
         region_list_update(region_list_tuple->value->cstring, region_list_begin == NULL);
@@ -129,7 +136,7 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 
 static void draw_row_callback(GContext* ctx, Layer *cell_layer, MenuIndex *cell_index, void *data) {
     if (fetching_regions) {
-        menu_cell_basic_draw(ctx, cell_layer, "Fetching regions...", NULL, NULL);
+        menu_cell_basic_draw(ctx, cell_layer, info_cell_message, NULL, NULL);
         return;
     }
 
