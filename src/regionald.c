@@ -15,7 +15,7 @@ enum {
     SERVICE_ERROR
 };
 
-#define MAX_REGIONS (11)
+#define MAX_REGIONS (19)
 
 typedef struct {
     bool selected;
