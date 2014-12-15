@@ -119,7 +119,7 @@ static void in_dropped_handler(AppMessageResult reason, void *context) {
 
 // Called when PebbleKitJS does not acknowledge receipt of a message
 static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Message not sent! Reason: %d", reason);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Message not sent! Reason: %d", app_message_enum_to_string(reason));
 }
 
 static int16_t get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
@@ -142,11 +142,7 @@ static void draw_row_callback(GContext* ctx, Layer *cell_layer, MenuIndex *cell_
 
     const int index = cell_index->row;
     RegionItem item = region_list_items[index];    
-    /*
-    if ((item = get_todo_list_item_at_index(index)) == NULL) {
-        return;
-    }
-    */
+
     if (!item.selected) {
         menu_cell_basic_draw(ctx, cell_layer, item.full_name, NULL, NULL);
     } else {
