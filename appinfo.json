@@ -1,24 +1,25 @@
 {
-    "versionLabel": "1.0",
-    "uuid": "131d7f2d-e341-4a17-ad9e-9110ea1e766c",
     "appKeys": {
-        "region_list_begin": 3,
         "region_list": 0,
-        "region_update": 1,
+        "region_list_begin": 3,
         "region_selected": 2,
+        "region_update": 1,
         "service_error": 4
     },
-    "longName": "Regionald",
-    "versionCode": 1,
     "capabilities": [
         "configurable"
     ],
-    "shortName": "Regionald",
     "companyName": "joel.jauregui@gmail.com",
-    "watchapp": {
-        "watchface": false
-    },
+    "longName": "Regionald",
+    "projectType": "native",
     "resources": {
         "media": []
+    },
+    "shortName": "Regionald",
+    "uuid": "131d7f2d-e341-4a17-ad9e-9110ea1e766c",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
     }
 }

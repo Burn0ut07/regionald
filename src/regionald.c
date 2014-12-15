@@ -119,7 +119,7 @@ static void in_dropped_handler(AppMessageResult reason, void *context) {
 
 // Called when PebbleKitJS does not acknowledge receipt of a message
 static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Message not sent! Reason: %d", app_message_enum_to_string(reason));
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Message not sent! Reason: %s", app_message_enum_to_string(reason));
 }
 
 static int16_t get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
